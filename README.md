@@ -4,3 +4,5 @@
  npm install
  
  npm start
+ 
+ "npm run make" to generate the .exe file
