@@ -51,36 +51,45 @@ app.on("activate", function () {
 
 // Function to handle file upload and conversion
 function handleFileUpload() {
-  dialog
-    .showOpenDialog(mainWindow, {
-      properties: ["openFile"],
-      filters: [{ name: "XLSX Files", extensions: ["xlsx"] }],
-    })
-    .then((result) => {
-      if (!result.canceled) {
-        const filePath = result.filePaths[0];
-        const workbook = xlsx.readFile(filePath);
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = xlsx.utils.sheet_to_json(worksheet);
-        const jsonFilePath = filePath.replace(".xlsx", ".json");
+  dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [{ name: 'XLSX Files', extensions: ['xlsx'] }]
+  }).then(result => {
+    if (!result.canceled) {
+      const filePath = result.filePaths[0];
+      const workbook = xlsx.readFile(filePath);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = xlsx.utils.sheet_to_json(worksheet);
+      const jsonFilePath = filePath.replace('.xlsx', '.json');
 
-        fs.writeFile(jsonFilePath, JSON.stringify(jsonData, null, 2), (err) => {
-          if (err) {
-            dialog.showErrorBox(
-              "Error",
-              "An error occurred while converting the file."
-            );
-          } else {
-            dialog.showMessageBox(mainWindow, {
-              message: "File converted successfully!",
-              buttons: ["OK"],
+      fs.writeFile(jsonFilePath, JSON.stringify(jsonData, null, 2), (err) => {
+        if (err) {
+          dialog.showErrorBox('Error', 'An error occurred while converting the file.');
+        } else {
+          dialog.showMessageBox(mainWindow, {
+            message: 'File converted successfully!',
+            buttons: ['OK']
+          }).then(() => {
+            const fileContent = fs.readFileSync(jsonFilePath);
+            const base64Data = Buffer.from(fileContent).toString('base64');
+            const downloadPath = path.join(app.getPath('downloads'), path.basename(jsonFilePath));
+
+            fs.writeFile(downloadPath, base64Data, 'base64', (error) => {
+              if (error) {
+                dialog.showErrorBox('Error', 'An error occurred while downloading the file.');
+              } else {
+                dialog.showMessageBox(mainWindow, {
+                  message: 'File downloaded successfully!',
+                  buttons: ['OK']
+                });
+              }
             });
-          }
-        });
-      }
-    });
+          });
+        }
+      });
+    }
+  });
 }
-
 // Expose handleFileUpload function to the renderer process
 // You can call this function from your HTML/JavaScript code
 global.handleFileUpload = handleFileUpload;
