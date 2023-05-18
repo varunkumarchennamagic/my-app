@@ -18,7 +18,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-squirrel-startup": "^1.0.0",
+    "fs": "^0.0.1-security",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.1.1",
